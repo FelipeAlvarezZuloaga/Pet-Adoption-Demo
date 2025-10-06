@@ -10,10 +10,14 @@ wheels/
 .venv
 .python-version
 
-# Data files
+# Data files (Ignore content files, but keep structure)
 data/**/*.csv
 data/**/*.json
 static/images/*
+
+# Don't ignore these specific files
+!data/**/.gitkeep
+!static/**/.gitkeep
 
 # System files
 .DS_Store
