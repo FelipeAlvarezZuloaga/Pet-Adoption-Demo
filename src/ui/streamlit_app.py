@@ -5,6 +5,10 @@ from pathlib import Path
 import streamlit as st
 from elasticsearch import Elasticsearch
 
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
 # Path setup to import from src
 ROOT_DIR = Path(__file__).resolve().parents[2]
 SRC_DIR = ROOT_DIR / "src"
@@ -45,21 +49,36 @@ def search_pets(query_text: str, size: int = 12) -> list:
     Returns:
         list: A list of pet records matching the query.
     """
+    
+        # Generar embedding del texto de consulta
+    query_vector = model.encode(query_text).tolist()
+
+    # Consulta híbrida: texto + similitud semántica
     body = {
+        "size": size,
         "query": {
-            "multi_match": {
-                "query": query_text,
-                "fields": [
-                    "description^3",
-                    "type^2",
-                    "color",
-                    "name",
-                ],  # Search priority
-                "fuzziness": "AUTO",
+            "script_score": {
+                "query": {
+                    "multi_match": {
+                        "query": query_text,
+                        "fields": [
+                            "description^3",
+                            "type^2",
+                            "color",
+                            "name",
+                        ],
+                        "fuzziness": "AUTO",
+                    }
+                },
+                "script": {
+                    "source": "cosineSimilarity(params.query_vector, 'embedding') + 1.0",
+                    "params": {"query_vector": query_vector},
+                },
             }
-        }
+        },
     }
-    res = es.search(index=INDEX_NAME, body=body, size=size)
+
+    res = es.search(index=INDEX_NAME, body=body)
     return [hit["_source"] for hit in res["hits"]["hits"]]
 
 

@@ -4,6 +4,8 @@ import pandas as pd
 
 from const import PROCESSED_CSV_PATH, PROCESSED_JSON_DIR
 
+from src.index.embeddings import get_embedding
+
 
 def create_json_documents() -> int:
     """Convert the processed CSV into individual JSON documents for Elasticsearch.
@@ -29,6 +31,7 @@ def create_json_documents() -> int:
             "color": row["Color1"],
             "description": row["Description"],
             "photo_amount": int(row["PhotoAmt"]),
+            "embedding": get_embedding(row["Description"]),
         }
 
         # Save each document as a JSON file
