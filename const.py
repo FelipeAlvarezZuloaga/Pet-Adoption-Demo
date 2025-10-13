@@ -55,7 +55,13 @@ INDEX_MAPPING = {
             "color": {"type": "keyword"},
             "description": {"type": "text"},
             "photo_amount": {"type": "integer"},
-            "image_url": {"type": "keyword"},  # 👈 opcional, si luego lo agregamos
+            "image_url": {"type": "keyword"},
+            "embedding": {
+                "type": "dense_vector",
+                "dims": 384,  # depende del modelo, MiniLM tiene 384
+                "index": True,
+                "similarity": "cosine"
+            }
         }
     }
 }
